@@ -9,12 +9,12 @@ namespace Assets.Scripts
 {
     public class Ball
     {
-        public Ball(GameObject ballObject, float initialSpeed)
+        public Ball(GameObject ballObject, Vector3 initialVelocity)
         {
             BallObject = ballObject;
-            Speed = initialSpeed;
+            Velocity = initialVelocity;
         }
         public GameObject BallObject { get; }
-        public float Speed { get; set; }
+        public Vector3 Velocity { get; set; }
     }
 }
