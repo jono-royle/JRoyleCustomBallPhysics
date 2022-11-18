@@ -16,5 +16,6 @@ namespace Assets.Scripts
         }
         public GameObject BallObject { get; }
         public Vector3 Velocity { get; set; }
+        public string CollidedWith { get; set; }
     }
 }

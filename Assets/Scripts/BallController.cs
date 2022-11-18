@@ -125,15 +125,34 @@ public class BallController : MonoBehaviour
         _ballCount += 1;
     }
 
-    public void OnBallCollision(BallCollisionContainer collision)
+    public void OnBallCollision(BallCollisionContainer collisionContainer)
     {
-        //TODO ball-ball collision
-        Ball colliderBall = _ballCollection[collision.Ball.name];
+        Ball colliderBall = _ballCollection[collisionContainer.Ball.name];
         float ballSpeed = colliderBall.Velocity.magnitude;
         Vector3 intialDirection = colliderBall.Velocity.normalized;
-        Vector3 collisionNormal = collision.Collision.contacts[0].normal;
-        //Reflection of a vector V against a plane with normal N: R=V-2N(VdotN)
-        Vector3 newDirection = intialDirection - 2 * Vector3.Dot(intialDirection, collisionNormal) * collisionNormal;
-        colliderBall.Velocity = newDirection.normalized * ballSpeed * RestitutionCoefficient;
+        Vector3 collisionNormal = collisionContainer.Collision.contacts[0].normal;
+        if (collisionContainer.Collision.gameObject.tag == "Scenery")
+        {
+            //Reflection of a vector V against a plane with normal N: R=V-2N(VdotN)
+            Vector3 newDirection = intialDirection - 2 * collisionNormal * Vector3.Dot(intialDirection, collisionNormal);
+            colliderBall.Velocity = newDirection.normalized * ballSpeed * RestitutionCoefficient;
+        }
+        else
+        {
+            Ball secondBall = _ballCollection[collisionContainer.Collision.gameObject.name];
+            if (colliderBall.CollidedWith == secondBall.BallObject.name)
+            {
+                //we already handled this collision in the other balls onCollision
+                colliderBall.CollidedWith = "";
+            }
+            else
+            {
+                Vector3 relativeVelocity = colliderBall.Velocity - secondBall.Velocity;
+                Vector3 normalVelocity = Vector3.Dot(relativeVelocity, collisionNormal) * collisionNormal;
+                colliderBall.Velocity = (colliderBall.Velocity - normalVelocity) * RestitutionCoefficient;
+                secondBall.Velocity = (secondBall.Velocity + normalVelocity) * RestitutionCoefficient;
+                secondBall.CollidedWith = colliderBall.BallObject.name;
+            }
+        }
     }
 }
