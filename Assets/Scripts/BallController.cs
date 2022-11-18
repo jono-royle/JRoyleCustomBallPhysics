@@ -63,6 +63,7 @@ public class BallController : MonoBehaviour
                 ApplyGravity(namedBall.Value);
             }
             ApplyDrag(namedBall.Value);
+            ApplyMagnusForce(namedBall.Value);
             if (namedBall.Value.Velocity.magnitude > 0.2)
             {
                 newBallPosition = currentBallPosition + (namedBall.Value.Velocity * Time.deltaTime);
@@ -78,7 +79,8 @@ public class BallController : MonoBehaviour
             }
 
             namedBall.Value.BallObject.transform.position = newBallPosition;
-                //TODO Ball spin
+            float spinInDegreesPerSec = namedBall.Value.Spin * (180 / Mathf.PI) * Time.deltaTime;
+            namedBall.Value.BallObject.transform.Rotate(new Vector3(0, spinInDegreesPerSec, 0));
         }
     }
 
@@ -110,6 +112,17 @@ public class BallController : MonoBehaviour
 
     }
 
+    private void ApplyMagnusForce(Ball ball)
+    {
+        //Magnus force on ball F = 1/2 * Cl * A  * d * v^2
+        //Cl = lift coefficient = 1/(2 + (v/vspin)), vspin = radius * w angular speed
+        float vspin = _ballRadius * ball.Spin;
+        //Cl is negative for topspin
+        var cl = (1 / (2 + (ball.Velocity.magnitude / Mathf.Abs(vspin)))) * Mathf.Sign(vspin);
+        float force = 0.5f * cl * _ballCrossSectionalArea * AirDenisty * (ball.Velocity.sqrMagnitude);
+        ball.Velocity += force * Vector3.up * Time.deltaTime;
+    }
+
     private void CreateNewBall()
     {
         //TODO add spin based on button press
@@ -120,7 +133,7 @@ public class BallController : MonoBehaviour
         ball.name = $"Ball{_ballCount}";
         BallCollision ballCollider = ball.GetComponent<BallCollision>();
         ballCollider.BallCollisionEvent.AddListener(OnBallCollision);
-        Ball createdBall = new Ball(ball, fireVector * (_mouseCounter * BallLaunchSpeed));
+        Ball createdBall = new Ball(ball, fireVector * (_mouseCounter * BallLaunchSpeed), 500);
         _ballCollection.Add(ball.name, createdBall);
         _ballCount += 1;
     }

@@ -9,13 +9,15 @@ namespace Assets.Scripts
 {
     public class Ball
     {
-        public Ball(GameObject ballObject, Vector3 initialVelocity)
+        public Ball(GameObject ballObject, Vector3 initialVelocity, float spin)
         {
             BallObject = ballObject;
             Velocity = initialVelocity;
+            Spin = spin;
         }
         public GameObject BallObject { get; }
         public Vector3 Velocity { get; set; }
         public string CollidedWith { get; set; }
+        public float Spin { get; set; }
     }
 }
