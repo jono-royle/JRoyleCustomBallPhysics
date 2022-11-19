@@ -9,6 +9,7 @@ public class HUDController : MonoBehaviour
 
     public void UpdateUI(float spinValue)
     {
+        //Convert radians per second to rpm, then show approximate value
         float rpm = spinValue / (2 * Mathf.PI) * 60;
         if (rpm > 0)
         {
