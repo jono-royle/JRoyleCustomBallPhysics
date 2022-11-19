@@ -57,13 +57,13 @@ public class BallController : MonoBehaviour
             _mouseCounter = 0;
         }
 
-        if (Input.GetKeyDown(KeyCode.UpArrow))
+        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W))
         {
             _inputSpin = Mathf.Min(_inputSpin + _spinIncrement, _maxSpin);
             SpinChanged.Invoke(_inputSpin);
         }
 
-        if (Input.GetKeyDown(KeyCode.DownArrow))
+        if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
         {
             _inputSpin = Mathf.Max(_inputSpin - _spinIncrement, -1 * _maxSpin);
             SpinChanged.Invoke(_inputSpin);
@@ -79,7 +79,6 @@ public class BallController : MonoBehaviour
             if (distanceToGround <= _ballRadius)
             {
                 currentBallPosition = currentBallPosition + Vector3.up * (_ballRadius - distanceToGround);
-                ApplyBounceFriction(namedBall.Value);
             }
             else
             {
@@ -88,7 +87,7 @@ public class BallController : MonoBehaviour
             ApplyDrag(namedBall.Value);
             ApplyMagnusForce(namedBall.Value);
             ApplyAirTorque(namedBall.Value);
-            if (namedBall.Value.Velocity.magnitude > 0.2)
+            if (namedBall.Value.Velocity.magnitude > 0.6)
             {
                 newBallPosition = currentBallPosition + (namedBall.Value.Velocity * Time.deltaTime);
             }
@@ -102,6 +101,23 @@ public class BallController : MonoBehaviour
             namedBall.Value.BallObject.transform.Rotate(new Vector3(spinInDegreesPerSec, 0, 0), Space.World);
         }
     }
+    private void CreateNewBall()
+    {
+        //TODO add spin based on button press
+        GameObject ball = Instantiate(BallTemplate, transform, true);
+        ball.transform.localScale = _scaleVector;
+        Vector3 fireVector = PlayerCam.transform.forward;
+        fireVector.Normalize();
+        ball.name = $"Ball{_ballCount}";
+        BallCollision ballCollider = ball.GetComponent<BallCollision>();
+        ballCollider.BallCollisionEvent.AddListener(OnBallCollision);
+        ball.transform.Rotate(new Vector3(Random.Range(-180f, 180f), Random.Range(-180f, 180f), Random.Range(-180f, 180f)), Space.World);
+        Ball createdBall = new Ball(ball, fireVector * (_mouseCounter * BallLaunchSpeed), _inputSpin);
+        _ballCollection.Add(ball.name, createdBall);
+        _ballCount += 1;
+    }
+
+    #region Physics
 
     private void ApplyGravity(Ball ball)
     {
@@ -135,46 +151,25 @@ public class BallController : MonoBehaviour
 
     private void ApplyAirTorque(Ball ball)
     {
-        //Torque T = 8 * pi * air viscosity * r^3 * angular velocity
+        //Torque T = 8 * pi * air viscosity* r^3 * angular velocity
         //Angular acceleration = rotational inertia / torque
-        if(ball.Spin != 0)
+        if (ball.Spin != 0)
         {
             float torque = 8 * Mathf.PI * _airViscosity * Mathf.Pow(_ballRadius, 3) * ball.Spin;
-            float acceleration = _rotationalInertia / torque;
-            ball.Spin -= acceleration * Time.deltaTime;
+            float acceleration = torque / _rotationalInertia;
+            ball.Spin -=  acceleration * Time.deltaTime;
         }
     }
 
     private void ApplyBounceFriction(Ball ball)
     {
-        if(-0.1 < ball.Spin && ball.Spin < 0.1)
+        if (ball.Spin != 0)
         {
-            ball.Spin = 0;
-        }
-        if(ball.Spin != 0)
-        {
-            ball.Spin = ball.Spin * (1 / (1 + (BallMass * _radiusSquared)/_rotationalInertia));
+            ball.Spin = ball.Spin * (1 / (1 + (BallMass * _radiusSquared) / _rotationalInertia));
             //Horizontal component of velocity v = r * new ball spin
-            //-spin = -1z, spin =1z
             ball.Velocity += new Vector3(0, 0, ball.Spin * _ballRadius * Time.deltaTime);
         }
     } 
-
-    private void CreateNewBall()
-    {
-        //TODO add spin based on button press
-        GameObject ball = Instantiate(BallTemplate, transform, true);
-        ball.transform.localScale = _scaleVector;
-        Vector3 fireVector = PlayerCam.transform.forward;
-        fireVector.Normalize();
-        ball.name = $"Ball{_ballCount}";
-        BallCollision ballCollider = ball.GetComponent<BallCollision>();
-        ballCollider.BallCollisionEvent.AddListener(OnBallCollision);
-        ball.transform.Rotate(new Vector3(Random.Range(-180f, 180f), Random.Range(-180f, 180f), Random.Range(-180f, 180f)), Space.World);
-        Ball createdBall = new Ball(ball, fireVector * (_mouseCounter * BallLaunchSpeed), _inputSpin);
-        _ballCollection.Add(ball.name, createdBall);
-        _ballCount += 1;
-    }
 
     private void OnBallCollision(BallCollisionContainer collisionContainer)
     {
@@ -207,4 +202,6 @@ public class BallController : MonoBehaviour
             }
         }
     }
+
+    #endregion
 }
