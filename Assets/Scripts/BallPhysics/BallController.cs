@@ -11,6 +11,7 @@ public class BallController : MonoBehaviour
     public BoxCollider BoundingBox;
     public UnityEvent<float> BackSpinChanged;
     public UnityEvent<float> SideSpinChanged;
+    public UnityEvent<Ball> LastBallUpdated;
     [Range(1f, 500)] public float BallLaunchSpeed = 40f;
     [Range(0.03f, 2)] public float BallDiameter = 0.06f;
     [Range(0.01f, 100)] public float BallMass = 0.06f;
@@ -21,6 +22,7 @@ public class BallController : MonoBehaviour
     [Range(0, 30)] public float AirViscosity = 16f;
 
     private Dictionary<string, Ball> _ballCollection = new Dictionary<string, Ball>();
+    private Ball _lastBall;
     private int _ballCount = 0;
     private float _mouseCounter = 0f;
     private Vector3 _gravityVector;
@@ -32,7 +34,7 @@ public class BallController : MonoBehaviour
     private float _rotationalInertia;
     private float _radiusSquared;
     private float _spinIncrement = 100f;
-    private float _airViscosity; //Approx value for 25 degrees c air
+    private float _airViscosity; 
 
     // Start is called before the first frame update
     void Start()
@@ -57,8 +59,10 @@ public class BallController : MonoBehaviour
         {
             Vector3 newBallPosition;
             Vector3 currentBallPosition = namedBall.Value.BallObject.transform.position;
-
-            ApplyGravity(namedBall.Value);
+            if(namedBall.Value.HeightFromGround() > 0)
+            {
+                ApplyGravity(namedBall.Value);
+            }
             ApplyAirTorque(namedBall.Value);
             ApplyDrag(namedBall.Value);
             ApplyMagnusForce(namedBall.Value);
@@ -67,13 +71,19 @@ public class BallController : MonoBehaviour
 
             if (!BoundingBox.bounds.Contains(newBallPosition))
             {
+                //Prevent ball clipping through walls
                 newBallPosition = BoundingBox.bounds.ClosestPoint(newBallPosition);
             }
 
             namedBall.Value.BallObject.transform.position = newBallPosition;
             Vector3 spin = namedBall.Value.Spin;
             //convert spin velocity to rotation around the perpendicular axis
-            namedBall.Value.BallObject.transform.Rotate(new Vector3(spin.y,spin.z,spin.x) * Mathf.Rad2Deg * Time.deltaTime, Space.World);
+            namedBall.Value.BallObject.transform.Rotate(new Vector3(spin.y,spin.x,spin.z) * Mathf.Rad2Deg * Time.deltaTime, Space.World);
+        }
+
+        if(_lastBall != null)
+        {
+            LastBallUpdated.Invoke(_lastBall);
         }
     }
 
@@ -142,8 +152,9 @@ public class BallController : MonoBehaviour
         ballCollider.BallCollisionEvent.AddListener(OnBallCollision);
         //randomly rotate the ball before firing (for aesthetic reasons only)
         ball.transform.Rotate(new Vector3(Random.Range(-180f, 180f), Random.Range(-180f, 180f), Random.Range(-180f, 180f)), Space.World);
-        Ball createdBall = new Ball(ball, fireVector * (mouseCounter * BallLaunchSpeed), _inputSpin);
+        Ball createdBall = new Ball(ball, fireVector * (mouseCounter * BallLaunchSpeed), _inputSpin, _ballRadius);
         _ballCollection.Add(ball.name, createdBall);
+        _lastBall = createdBall;
         _ballCount += 1;
     }
 
@@ -172,7 +183,7 @@ public class BallController : MonoBehaviour
         //Cl = lift coefficient = 1/(2 + (v/vspin)), vspin = radius * w angular speed
         if (ball.Spin.magnitude != 0)
         {
-            float cl = 1f / (2f + (ball.Velocity.magnitude / ball.Spin.magnitude));
+            float cl = 1f / (2f + (ball.Velocity.magnitude / (ball.Spin.magnitude * _ballRadius)));
             float force = 0.5f * cl * _ballCrossSectionalArea * AirDenisty * (ball.Velocity.sqrMagnitude);
             float acceleration = force / BallMass;
             ball.Velocity += acceleration * ball.Spin.normalized * Time.deltaTime;
