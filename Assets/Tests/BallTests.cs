@@ -25,6 +25,15 @@ public class BallTests
         {
             Assert.Fail("BallController not found");
         }
+        ballController.BallMass = 0.06f;
+        ballController.BallLaunchSpeed = 50;
+        ballController.BallDiameter = 0.06f;
+        ballController.DragCoefficient = 0.5f;
+        ballController.RestitutionCoefficient = 0.7f;
+        ballController.Gravity = 9.82f;
+        ballController.AirDenisty = 1.2f;
+        ballController.AirViscosity = 16f;
+
         ballController.CreateNewBall(1);
         yield return new WaitForSeconds(0.1f);
         BallCollision ball = (BallCollision)GameObject.FindObjectOfType(typeof(BallCollision));
@@ -34,7 +43,7 @@ public class BallTests
         }
         ball.BallCollisionEvent.AddListener(OnBallCollision);
         yield return new WaitForSeconds(1f);
-        Assert.IsTrue(_collisionCount > 0, "Ball has not collided");
+        Assert.IsTrue(_collisionCount == 2, $"Expected 2 collisions but {_collisionCount} detected");
     }
 
     private void OnBallCollision(BallCollisionContainer arg0)
