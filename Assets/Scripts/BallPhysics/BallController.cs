@@ -82,7 +82,7 @@ public class BallController : MonoBehaviour
         }
         if (Input.GetMouseButtonUp(0))
         {
-            CreateNewBall();
+            CreateNewBall(_mouseCounter);
             _mouseCounter = 0;
         }
 
@@ -99,7 +99,7 @@ public class BallController : MonoBehaviour
         }
     }
 
-    private void CreateNewBall()
+    public void CreateNewBall(float mouseCounter)
     {
         GameObject ball = Instantiate(BallTemplate, transform, true);
         ball.transform.localScale = _scaleVector;
