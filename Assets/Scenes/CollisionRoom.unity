@@ -1540,8 +1540,8 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   BallLaunchSpeed: 40
-  BallDiameter: 0.06
-  BallMass: 0.06
+  BallDiameter: 1
+  BallMass: 1
   DragCoefficient: 0.5
   RestitutionCoefficient: 0.7
   Gravity: 9.82

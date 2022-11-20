@@ -59,9 +59,9 @@ public class BallController : MonoBehaviour
             Vector3 currentBallPosition = namedBall.Value.BallObject.transform.position;
 
             ApplyGravity(namedBall.Value);
+            ApplyAirTorque(namedBall.Value);
             ApplyDrag(namedBall.Value);
             ApplyMagnusForce(namedBall.Value);
-            ApplyAirTorque(namedBall.Value);
 
             newBallPosition = currentBallPosition + (namedBall.Value.Velocity * Time.deltaTime);
 
@@ -128,8 +128,6 @@ public class BallController : MonoBehaviour
             CreateNewBall(_mouseCounter);
             _mouseCounter = 0;
         }
-
-
     }
 
     public void CreateNewBall(float mouseCounter)
@@ -158,9 +156,11 @@ public class BallController : MonoBehaviour
 
     private void ApplyDrag(Ball ball)
     {
-        //Drag force on ball F = 1/2 * C * A  * d * v^2
-        //C = coefficent of drag, A = cross-sectional area, d = air density, v = velocity
-        float force = 0.5f * DragCoefficient * _ballCrossSectionalArea * AirDenisty * (ball.Velocity.sqrMagnitude);
+        //Drag coefficient of a spinning ball, formula from experimental data http://www.physics.usyd.edu.au/~cross/TRAJECTORIES/42.%20Ball%20Trajectories.pdf 
+        float spinningCD = DragCoefficient + 1f / Mathf.Pow(22.5f + 4.2f * Mathf.Pow(ball.Velocity.magnitude / ball.Spin.magnitude, 2.5f),0.4f);
+        //Drag force on ball F = 1/2 * Cd * A  * d * v^2
+        //Cd = coefficent of drag, A = cross-sectional area, d = air density, v = velocity
+        float force = 0.5f * spinningCD * _ballCrossSectionalArea * AirDenisty * (ball.Velocity.sqrMagnitude);
         float acceleration = force / BallMass;
         Vector3 backwards = -1 * ball.Velocity;
         ball.Velocity += backwards.normalized * acceleration * Time.deltaTime;
