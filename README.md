@@ -1,6 +1,6 @@
 # JRoyleCustomBallPhysicsGit
 
-Unity project using Unity rigidbody collision detection and custom physics simulation of ball trajectories.
+Unity 2021 project using Unity rigidbody collision detection and custom physics simulation of ball trajectories.
 
 Controls:
 Move mouse to aim, hold left mouse button and release to fire. The longer the button is held, the faster the ball will be launched.
