@@ -13,7 +13,7 @@ public class BallController : MonoBehaviour
     public UnityEvent<float> SideSpinChanged;
     public UnityEvent<Ball> LastBallUpdated;
     [Range(1f, 500)] public float BallLaunchSpeed = 40f;
-    [Range(0.03f, 2)] public float BallDiameter = 0.06f;
+    [Range(0.03f, 2)] public float BallDiameter = 0.07f;
     [Range(0.01f, 100)] public float BallMass = 0.06f;
     [Range(0, 2)] public float DragCoefficient = 0.5f;
     [Range(0, 1)] public float RestitutionCoefficient = 0.7f;
@@ -39,15 +39,32 @@ public class BallController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        SetInitialConditions();
+        SetBoundingBox();
+    }
+
+    private void SetBoundingBox()
+    {
+        Vector3 bbSize = BoundingBox.size;
+        BoundingBox.size = new Vector3(bbSize.x - BallDiameter, bbSize.y - BallDiameter, bbSize.z - BallDiameter);
+    }
+
+    private void SetInitialConditions()
+    {
         _ballRadius = BallDiameter / 2f;
         _radiusSquared = Mathf.Pow(_ballRadius, 2);
+        float ballVolume = 4f / 3f * Mathf.PI * Mathf.Pow(_ballRadius, 3);
+        if (BallMass / ballVolume < AirDenisty)
+        {
+            BallMass = AirDenisty * ballVolume;
+            //Dont allow lighter than air balls as it can cause bugs with the velocity imparted by drag when they
+            //are given instantaneous velocity
+        }
         _gravityVector = new Vector3(0, -1 * Gravity, 0);
         _scaleVector = new Vector3(BallDiameter, BallDiameter, BallDiameter);
         _ballCrossSectionalArea = Mathf.PI * _radiusSquared;
         _rotationalInertia = (2f / 5f) * BallMass * _radiusSquared;
         _airViscosity = AirViscosity * 1e-6f;
-        Vector3 bbSize = BoundingBox.size;
-        BoundingBox.size = new Vector3(bbSize.x - BallDiameter, bbSize.y - BallDiameter, bbSize.z - BallDiameter);
     }
 
     // Update is called once per frame
@@ -59,7 +76,7 @@ public class BallController : MonoBehaviour
         {
             Vector3 newBallPosition;
             Vector3 currentBallPosition = namedBall.Value.BallObject.transform.position;
-            if(namedBall.Value.HeightFromGround() > 0)
+            if(namedBall.Value.HeightFromGround() > 0.001)
             {
                 ApplyGravity(namedBall.Value);
             }
