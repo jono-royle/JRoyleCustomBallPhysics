@@ -21,6 +21,8 @@ and avoid having to deal with buoyancy)
 - Air density in kg/m^3 (affects the air resistance drag force and the magnus effect lift force on the ball)
 - Air viscosity in cSt (affects the torque the ball generates against the air while spinning)
 
+A sample unit test is included.
+
 This simulation models balls trajectory through the air and handles collisions with obstacles and collisions between balls. The physics simulation models gravity and air resistance.
 If the ball is given spin by the player, the model also simulates magnus effect forces which affect the trajectory, torque from the air which slows the rate of spin and increased air resistance due to the spinning.
 Collisions with obstacles also reduce the spin velocity, and impart linear velocity based on the spin e.g a ball with backspin will gain some backwards velocity when it bounces off the ground.
