@@ -34,22 +34,23 @@ public class BallController : MonoBehaviour
     private float _rotationalInertia;
     private float _radiusSquared;
     private float _spinIncrement = 100f;
-    private float _airViscosity; 
+    private float _airViscosity;
+    private Vector3 _initialBoundingBoxSize;
 
     // Start is called before the first frame update
     void Start()
     {
+        _initialBoundingBoxSize = BoundingBox.size;
         SetInitialConditions();
         SetBoundingBox();
     }
 
-    private void SetBoundingBox()
+    public void SetBoundingBox()
     {
-        Vector3 bbSize = BoundingBox.size;
-        BoundingBox.size = new Vector3(bbSize.x - BallDiameter, bbSize.y - BallDiameter, bbSize.z - BallDiameter);
+        BoundingBox.size = new Vector3(_initialBoundingBoxSize.x - BallDiameter, _initialBoundingBoxSize.y - BallDiameter, _initialBoundingBoxSize.z - BallDiameter);
     }
 
-    private void SetInitialConditions()
+    public void SetInitialConditions()
     {
         _ballRadius = BallDiameter / 2f;
         _radiusSquared = Mathf.Pow(_ballRadius, 2);
