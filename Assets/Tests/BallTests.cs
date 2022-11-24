@@ -33,6 +33,8 @@ public class BallTests
         ballController.Gravity = 9.82f;
         ballController.AirDenisty = 1.2f;
         ballController.AirViscosity = 16f;
+        ballController.SetInitialConditions();
+        ballController.SetBoundingBox();
 
         ballController.CreateNewBall(1);
         yield return new WaitForSeconds(0.1f);
