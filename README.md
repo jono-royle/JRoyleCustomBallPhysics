@@ -27,7 +27,7 @@ This simulation models balls trajectory through the air and handles collisions w
 If the ball is given spin by the player, the model also simulates magnus effect forces which affect the trajectory, torque from the air which slows the rate of spin and increased air resistance due to the spinning.
 Collisions with obstacles also reduce the spin velocity, and impart linear velocity based on the spin e.g a ball with backspin will gain some backwards velocity when it bounces off the ground.
 
-This provides a good approximation of ball trajectories in a variety of conditions. Some areas where the model could be expanded where I to keep working on it:
+This provides a good approximation of ball trajectories in a variety of conditions. Some areas where the model could be expanded were I to keep working on it:
 - As tennis balls can deform, their spin velocity not only decreases on a collision but can also change direction as friction is applied from the ground. Currently my model assumes spin direction does not change after firing,
 e.g more like an inflexible ping pong ball
 - Currently balls in the simulation which have finished bouncing and are resting upon the ground slide. In reality the ground would apply friction opposite to the direction of movement causing balls to roll 
